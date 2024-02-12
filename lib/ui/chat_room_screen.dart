@@ -6,6 +6,8 @@ import 'package:ichat/main.dart';
 import 'package:ichat/models/chat_room_model.dart';
 import 'package:ichat/models/message_model.dart';
 import 'package:ichat/models/user_model.dart';
+import 'package:ichat/ui/home_screen.dart';
+import 'package:ichat/ui/login_screen.dart';
 import 'package:intl/intl.dart';
 
 class ChatRoomScreen extends StatefulWidget {
@@ -28,12 +30,10 @@ class ChatRoomScreen extends StatefulWidget {
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   TextEditingController messageCtr = TextEditingController();
 
- /* // Add a helper method to format the date
-  String formatDate(DateTime dateTime) {
+  /*String formatDate(DateTime dateTime) {
     return DateFormat.yMMMMd().format(dateTime);
-  }*/
-
-  // Helper method to check if two dates are on the same day
+  }
+*/
   bool isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
         date1.month == date2.month &&
@@ -48,7 +48,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         messageId: uuid.v1(),
         sender: widget.userUser.uid,
         createdon: DateTime.now().toString(),
-        createdAt: Timestamp.now(),
         text: msg,
         seen: false,
       );
@@ -60,6 +59,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           .set(newMessage.toMap());
 
       widget.chatRoom.lastMessage = msg;
+      print(widget.chatRoom.lastMessage);
+      print(widget.chatRoom.chatroomid);
+      print(widget.chatRoom.participants.toString());
+      print(widget.chatRoom.users.toString());
+      print(widget.chatRoom.title);
       FirebaseFirestore.instance
           .collection("chatrooms")
           .doc(widget.chatRoom.chatroomid)
@@ -69,72 +73,166 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   // Helper method to build a message row
-  Widget buildMessageRow(MessageModel currentMessage) {
+  /*Widget buildMessageRow(MessageModel currentMessage) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: (currentMessage.sender == widget.userUser.uid)
+          ? MainAxisAlignment.end
+          : MainAxisAlignment.start,
+      children: [
+        Container(
+          margin: EdgeInsets.symmetric(vertical: 3),
+          padding: EdgeInsets.symmetric(
+            vertical: 10,
+            horizontal: 10,
+          ),
+          decoration: BoxDecoration(
+            color: currentMessage.sender == widget.userUser.uid
+                ? Colors.black87
+                : Colors.blue,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (currentMessage.sender != widget.userUser.uid)
+                    Text(
+                      currentMessage.sender.toString(),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                    ),
+                  SizedBox(width: 2), // Add spacing between name and time
+                  Text(
+                    DateFormat.Hm().format(DateTime.parse(currentMessage.createdon!.toString())),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 5), // Add spacing between name/time and message
+              Text(
+                currentMessage.text.toString(),
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }*/
+
+  // Helper method to build a message row
+  Widget buildMessageRow(MessageModel currentMessage, String senderName) {
     return Row(
       mainAxisAlignment: (currentMessage.sender == widget.userUser.uid)
           ? MainAxisAlignment.end
           : MainAxisAlignment.start,
       children: [
         Container(
-          margin: EdgeInsets.symmetric(vertical: 6),
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width *
-                0.7, // Adjust the maximum width of the bubble
+          margin: EdgeInsets.symmetric(vertical: 3),
+          padding: EdgeInsets.symmetric(
+            vertical: 10,
+            horizontal: 10,
           ),
           decoration: BoxDecoration(
             color: currentMessage.sender == widget.userUser.uid
-                ? Colors.blue
-                : Colors.grey[300],
-            borderRadius: BorderRadius.only(
-              topLeft: currentMessage.sender == widget.userUser.uid
-                  ? Radius.circular(20)
-                  : Radius.circular(0),
-              topRight: currentMessage.sender == widget.userUser.uid
-                  ? Radius.circular(0)
-                  : Radius.circular(20),
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
-            ),
+                ? Colors.black87
+                : Colors.blue,
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Padding(
-            padding: EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  currentMessage.text.toString(),
-                  style: TextStyle(
-                    color: currentMessage.sender == widget.userUser.uid
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (currentMessage.sender != widget.userUser.uid)
                     Text(
-                      DateFormat.Hm().format(DateTime.parse(currentMessage.createdon.toString())),
+                      senderName,
                       style: TextStyle(
-                        color: currentMessage.sender == widget.userUser.uid ? Colors.white70 : Colors.black54,
-                        fontSize: 12,
+                        color: Colors.white,
+                        fontSize: 10,
                       ),
                     ),
-                    /*Icon(
-      currentMessage.sender == widget.userUser.uid ? Icons.done_all : Icons.done,
-      color: currentMessage.sender == widget.userUser.uid ? Colors.white70 : Colors.black54,
-      size: 16,
-    ),*/
-                  ],
+                  SizedBox(width: 2), // Add spacing between name and time
+                  Text(
+                    DateFormat.Hm().format(DateTime.parse(currentMessage.createdon!.toString())),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 5), // Add spacing between name/time and message
+              Text(
+                currentMessage.text.toString(),
+                style: TextStyle(
+                  color: Colors.white,
                 ),
-
-              ],
-            ),
+              ),
+            ],
           ),
-        )
+        ),
       ],
     );
   }
+
+
+  void removeCurrentUserFromGroup(BuildContext context) async {
+    widget.chatRoom.users!.remove(widget.userUser.uid);
+    widget.chatRoom.participants!.remove(widget.userUser.uid);
+
+    await FirebaseFirestore.instance
+        .collection("chatrooms")
+        .doc(widget.chatRoom.chatroomid)
+        .set(widget.chatRoom.toMap());
+
+    // Get the updated chat room document from Firestore
+    DocumentSnapshot chatRoomSnapshot = await FirebaseFirestore.instance
+        .collection("chatrooms")
+        .doc(widget.chatRoom.chatroomid)
+        .get();
+
+    // Ensure that the data retrieved from Firestore is actually a map
+    if (chatRoomSnapshot.exists && chatRoomSnapshot.data() != null) {
+      Map<String, dynamic>? snapshotData = chatRoomSnapshot.data() as Map<String, dynamic>?;
+
+      if (snapshotData != null && snapshotData.containsKey('users')) {
+        dynamic usersData = snapshotData['users'];
+        print(usersData);
+
+
+
+
+        /*if (usersData is List) {
+          List<ChatRoomModel>? users = usersData.map((userData) {
+            print(userData);
+            return ChatRoomModel.fromMap(userData);
+          }).toList();
+
+          // Now you have a list of ChatRoomModel objects in the 'users' variable
+          // Navigate to another screen passing the users list as an argument
+
+        }*/
+      }
+    }
+  }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -144,19 +242,34 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Row(
+            title: Row(
             children: [
-              CircleAvatar(
+              widget.chatRoom.title == null || widget.chatRoom.title == ""
+                  ? CircleAvatar(
                 backgroundColor: Colors.grey,
                 backgroundImage:
-                    NetworkImage(widget.targetUser.profilepic.toString()),
-              ),
+                NetworkImage(widget.targetUser.profilepic.toString()),
+              )
+                  : Icon(Icons.group),
               SizedBox(
                 width: 10,
               ),
               Text(
-                widget.targetUser.fullname.toString(),
-              )
+                widget.chatRoom.title == null || widget.chatRoom.title == ""
+                    ? widget.targetUser.fullname.toString()
+                    : widget.chatRoom.title.toString(),
+              ),
+              SizedBox(width: MediaQuery.of(context).size.width * 0.24,),
+              IconButton(onPressed: (){
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HomeScreen(userModel: widget.userUser, firebaseUser: widget.firebaseUser),
+                  ),
+                );
+                removeCurrentUserFromGroup(context);
+
+              }, icon: Icon(Icons.exit_to_app))
             ],
           ),
         ),
@@ -173,7 +286,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           .collection("chatrooms")
                           .doc(widget.chatRoom.chatroomid)
                           .collection("messages")
-                          .orderBy("createdAt", descending: true)
                           .orderBy("createdon", descending: true)
                           .snapshots(),
                       builder: (context, snapshot) {
@@ -181,31 +293,23 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             ConnectionState.active) {
                           if (snapshot.hasData) {
                             QuerySnapshot datasnapshot =
-                                snapshot.data as QuerySnapshot;
-
-                            // Initialize variables to track current date
+                            snapshot.data as QuerySnapshot;
                             DateTime currentDate = DateTime.now();
-
                             return ListView.builder(
                               reverse: true,
                               itemCount: datasnapshot.docs.length,
                               itemBuilder: (context, index) {
                                 MessageModel currentMessage =
-                                    MessageModel.fromMap(
-                                        datasnapshot.docs[index].data()
-                                            as Map<String, dynamic>);
+                                MessageModel.fromMap(
+                                    datasnapshot.docs[index].data()
+                                    as Map<String, dynamic>);
 
                                 // Check if the date has changed
-                                if (currentMessage.createdon != null &&
-                                    currentMessage.createdAt != null) {
+                                if (currentMessage.createdon != null) {
                                   DateTime messageDate = DateTime.parse(
                                       currentMessage.createdon!.toString());
-                                  //currentMessage.createdAt!.Timestamp.now();
-
                                   if (!isSameDay(messageDate, currentDate)) {
                                     currentDate = messageDate;
-
-                                    // Add a date header for the new date
                                     return Column(
                                       children: [
                                         /*Container(
@@ -214,12 +318,12 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                             horizontal: 10,
                                           ),
                                           color: Colors.grey.withOpacity(0.5),
-                                          child:*//* Text(
+                                          child: Text(
                                             formatDate(currentDate),
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                             ),
-                                          ),*//*
+                                          ),
                                         ),*/
                                         buildMessageRow(currentMessage),
                                       ],
@@ -275,7 +379,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       Container(
                         decoration: BoxDecoration(
                             color: AppColors.greyColor.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(50)),
                         child: IconButton(
                           onPressed: () {
                             sendMessage();
